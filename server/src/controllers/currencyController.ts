@@ -54,7 +54,13 @@ export const getCurrencies = async (req: Request, res: Response) => {
         apikey: API_KEY
       }
     });
-    const currencies = response?.data?.data;
+
+    const currenciesObj = response?.data?.data;
+
+    // Convert object to array of currency objects
+    const currencies = Object.values(currenciesObj);
+
+    console.log({ currencies });
     res.json({ currencies });
   } catch (error) {
     res.status(500).json({
