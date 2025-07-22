@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useCurrencyStore } from '../store/currencyStore';
 import { getCurrencyList, convertCurrency } from '../services/currencyService';
 
@@ -9,6 +9,7 @@ interface Currency {
 
 const CurrencyConverter: React.FC = () => {
   const [currencies, setCurrencies] = useState<Currency[]>([]);
+  const memoizedCurrencies = useMemo(() => currencies, [currencies]);
   
   const [fromCurrency, setFromCurrency] = useState<string>('USD');
   const [toCurrency, setToCurrency] = useState<string>('INR');
@@ -22,6 +23,7 @@ const CurrencyConverter: React.FC = () => {
 
   const addConversion = useCurrencyStore((state) => state.addConversion);
   const conversionHistory = useCurrencyStore((state) => state.conversionHistory);
+  const memoizedConversionHistory = useMemo(() => conversionHistory, [conversionHistory]);
 
   useEffect(() => {
     const fetchCurrencies = async () => {
@@ -40,7 +42,7 @@ const CurrencyConverter: React.FC = () => {
     fetchCurrencies();
   }, []);
 
-  const handleConvert = async () => {
+  const handleConvert = useCallback(async () => {
     setLoading(true);
     setError(null);
     setResult(null);
@@ -63,7 +65,7 @@ const CurrencyConverter: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fromCurrency, toCurrency, amount, addConversion]);
 
   return (
     <div className="container mt-5">
@@ -98,7 +100,7 @@ const CurrencyConverter: React.FC = () => {
               value={fromCurrency}
               onChange={(e) => setFromCurrency(e.target.value)}
             >
-              {currencies?.length && currencies.map((currency) => (
+              {memoizedCurrencies?.length && memoizedCurrencies.map((currency) => (
                 <option key={currency.code} value={currency.code}>
                   {currency.code} - {currency.name}
                 </option>
@@ -113,7 +115,7 @@ const CurrencyConverter: React.FC = () => {
               value={toCurrency}
               onChange={(e) => setToCurrency(e.target.value)}
             >
-              {currencies.map((currency) => (
+              {memoizedCurrencies.map((currency) => (
                 <option key={currency.code} value={currency.code}>
                   {currency.code} - {currency.name}
                 </option>
@@ -138,7 +140,7 @@ const CurrencyConverter: React.FC = () => {
       </div>
 
       <h2 className="mt-5 mb-3 text-center">Conversion History</h2>
-      {conversionHistory.length === 0 ? (
+      {memoizedConversionHistory.length === 0 ? (
         <p className="text-center">No conversions yet.</p>
       ) : (
         <div className="table-responsive">
@@ -154,7 +156,7 @@ const CurrencyConverter: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {conversionHistory.map((record, index) => (
+              {memoizedConversionHistory.map((record, index) => (
                 <tr key={index}>
                   <td>{record.date}</td>
                   <td>{record.time}</td>
