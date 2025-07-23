@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import axios from "axios";
 
 const API_KEY = process.env.FREE_CURRENCY_API_KEY;
-const BASE_URL = "https://api.freecurrencyapi.com/v1";
+const BASE_URL = process.env.FREE_CURRENCY_BASE_URL;
 
 // It converts the currency fron base to target current
 export const convertCurrency = async (req: Request, res: Response) => {
@@ -22,8 +22,8 @@ export const convertCurrency = async (req: Request, res: Response) => {
       params: {
         apikey: API_KEY,
         base_currency: from,
-        currencies: to
-      }
+        currencies: to,
+      },
     });
 
     // Saving Response in a variable
@@ -42,17 +42,18 @@ export const convertCurrency = async (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).json({
       error: "Currency conversion failed",
-      details: error instanceof Error ? error?.message : error
+      details: error instanceof Error ? error?.message : error,
     });
   }
 };
 
+// FUNCTION to get currencies
 export const getCurrencies = async (req: Request, res: Response) => {
   try {
     const response = await axios.get(BASE_URL + "/currencies", {
       params: {
-        apikey: API_KEY
-      }
+        apikey: API_KEY,
+      },
     });
 
     const currenciesObj = response?.data?.data;
@@ -65,7 +66,7 @@ export const getCurrencies = async (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).json({
       error: "Failed to fetch currencies",
-      details: error instanceof Error ? error?.message : error
+      details: error instanceof Error ? error?.message : error,
     });
   }
 };
