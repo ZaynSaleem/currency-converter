@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useCurrencyStore } from '../store/currencyStore';
-import { getCurrencyList, convertCurrency } from '../services/currencyService';
+// export default CurrencyConverter;
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useCurrencyStore } from "../store/currencyStore";
+import { getCurrencyList, convertCurrency } from "../services/currencyService";
 
 interface Currency {
   code: string;
@@ -10,20 +11,22 @@ interface Currency {
 const CurrencyConverter: React.FC = () => {
   const [currencies, setCurrencies] = useState<Currency[]>([]);
   const memoizedCurrencies = useMemo(() => currencies, [currencies]);
-  
-  const [fromCurrency, setFromCurrency] = useState<string>('USD');
-  const [toCurrency, setToCurrency] = useState<string>('INR');
-  
+
+  const [fromCurrency, setFromCurrency] = useState<string>("USD");
+  const [toCurrency, setToCurrency] = useState<string>("INR");
   const [amount, setAmount] = useState<number>(1);
-  
   const [result, setResult] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
-
   const [loading, setLoading] = useState<boolean>(false);
 
   const addConversion = useCurrencyStore((state) => state.addConversion);
-  const conversionHistory = useCurrencyStore((state) => state.conversionHistory);
-  const memoizedConversionHistory = useMemo(() => conversionHistory, [conversionHistory]);
+  const conversionHistory = useCurrencyStore(
+    (state) => state.conversionHistory
+  );
+  const memoizedConversionHistory = useMemo(
+    () => conversionHistory,
+    [conversionHistory]
+  );
 
   useEffect(() => {
     const fetchCurrencies = async () => {
@@ -33,7 +36,7 @@ const CurrencyConverter: React.FC = () => {
         const fetchedCurrencies = await getCurrencyList();
         setCurrencies(fetchedCurrencies);
       } catch (err) {
-        setError('Failed to fetch currency list.');
+        setError("Failed to fetch currency list.");
         console.error(err);
       } finally {
         setLoading(false);
@@ -60,7 +63,7 @@ const CurrencyConverter: React.FC = () => {
         time: now.toLocaleTimeString(),
       });
     } catch (err) {
-      setError('Failed to convert currency.');
+      setError("Failed to convert currency.");
       console.error(err);
     } finally {
       setLoading(false);
@@ -68,108 +71,205 @@ const CurrencyConverter: React.FC = () => {
   }, [fromCurrency, toCurrency, amount, addConversion]);
 
   return (
-    <div className="container mt-5">
-      <h1 className="mb-4 text-center">Currency Converter</h1>
-      <div className="card p-4 shadow-sm">
-        {loading && (
-          <div className="d-flex justify-content-center mb-3">
-            <div className="spinner-border text-primary" role="status">
-              <span className="visually-hidden">Loading...</span>
-            </div>
+    <div className="container my-5" style={{ maxWidth: "90%" }}>
+      <div className="text-center mb-5">
+        <h1 className="fw-bold text-forest-green fs-2 fs-md-1 px-3">
+          Fast, Reliable International Money Exchange
+        </h1>
+        <p
+          className="text-secondary mb-4 mx-auto px-3"
+          style={{ maxWidth: "600px" }}
+        >
+          Convert between 170+ currencies with real-time exchange rates. Perfect
+          for business, travel, or keeping track of international markets.
+        </p>
+        <div className="d-flex flex-column flex-sm-row justify-content-center gap-3 mb-4 fw-medium text-primary-green px-3">
+          <div className="d-flex align-items-center justify-content-center">
+            <i className="bi bi-clock me-2"></i>
+            <span className="small">Real-time Rates</span>
           </div>
-        )}
-        {error && <div className="alert alert-danger text-center">{error}</div>}
-
-        <div className="row g-3 mb-4">
-          <div className="col-md-4 col-sm-12">
-            <label htmlFor="amount" className="form-label">Amount</label>
-            <input
-              type="number"
-              className="form-control"
-              id="amount"
-              value={amount}
-              onChange={(e) => setAmount(parseFloat(e.target.value))}
-              min="0"
-            />
+          <div className="d-flex align-items-center justify-content-center">
+            <i className="bi bi-shield-check me-2"></i>
+            <span className="small">Secure & Reliable</span>
           </div>
-          <div className="col-md-4 col-sm-12">
-            <label htmlFor="fromCurrency" className="form-label">From</label>
-            <select
-              className="form-select"
-              id="fromCurrency"
-              value={fromCurrency}
-              onChange={(e) => setFromCurrency(e.target.value)}
-            >
-              {memoizedCurrencies?.length && memoizedCurrencies.map((currency) => (
-                <option key={currency.code} value={currency.code}>
-                  {currency.code} - {currency.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="col-md-4 col-sm-12">
-            <label htmlFor="toCurrency" className="form-label">To</label>
-            <select
-              className="form-select"
-              id="toCurrency"
-              value={toCurrency}
-              onChange={(e) => setToCurrency(e.target.value)}
-            >
-              {memoizedCurrencies.map((currency) => (
-                <option key={currency.code} value={currency.code}>
-                  {currency.code} - {currency.name}
-                </option>
-              ))}
-            </select>
+          <div className="d-flex align-items-center justify-content-center">
+            <i className="bi bi-graph-up me-2"></i>
+            <span className="small">Market Analysis</span>
           </div>
         </div>
-
-        <div className="d-grid">
-          <button className="btn btn-primary btn-lg" onClick={handleConvert} disabled={loading}>
-            Convert
-          </button>
-        </div>
-
-        {result !== null && (
-          <div className="mt-4 p-3 bg-light rounded text-center">
-            <h3>
-              {amount} {fromCurrency} = {result.toFixed(2)} {toCurrency}
-            </h3>
-          </div>
-        )}
       </div>
 
-      <h2 className="mt-5 mb-3 text-center">Conversion History</h2>
-      {memoizedConversionHistory.length === 0 ? (
-        <p className="text-center">No conversions yet.</p>
-      ) : (
-        <div className="table-responsive">
-          <table className="table table-striped table-hover">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Time</th>
-                <th>From</th>
-                <th>To</th>
-                <th>Amount</th>
-                <th>Result</th>
-              </tr>
-            </thead>
-            <tbody>
-              {memoizedConversionHistory.map((record, index) => (
-                <tr key={index}>
-                  <td>{record.date}</td>
-                  <td>{record.time}</td>
-                  <td>{record.from}</td>
-                  <td>{record.to}</td>
-                  <td>{record.amount}</td>
-                  <td>{record.result.toFixed(2)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div className="row g-4 flex-column flex-lg-row">
+        {/* Left Column - Conversion */}
+        <div className="col col-lg-5 d-flex">
+          <div className="card p-4 shadow-sm rounded-4 glass-effect w-100">
+            <div className="d-flex align-items-center justify-content-between mb-4">
+              <h6 className="fw-bold text-forest-green m-0">
+                Currency Converter
+              </h6>
+              <span className="badge bg-success-subtle text-success px-3 py-2 rounded-pill">
+                <i className="bi bi-clock-history me-1"></i>
+                Live Rates
+              </span>
+            </div>
+            <h6 className="text-center text-muted mb-2">
+              Mid-market exchange rate
+            </h6>
+
+            {loading && (
+              <div className="d-flex justify-content-center mb-3">
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            )}
+            {error && (
+              <div className="alert alert-danger text-center">{error}</div>
+            )}
+
+            {/* Amount Input */}
+            <div className="mb-3">
+              <label htmlFor="amount" className="form-label text-start">
+                Amount
+              </label>
+              <div className="input-group">
+                <input
+                  type="number"
+                  className="form-control form-control-lg focus-none"
+                  id="amount"
+                  value={amount}
+                  onChange={(e) => setAmount(parseFloat(e.target.value))}
+                  min="0"
+                />
+                <select
+                  className="form-select form-select-lg"
+                  id="fromCurrency"
+                  value={fromCurrency}
+                  onChange={(e) => setFromCurrency(e.target.value)}
+                  style={{ maxWidth: "120px" }}
+                >
+                  {memoizedCurrencies.map((currency) => (
+                    <option key={currency.code} value={currency.code}>
+                      {currency.code}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Swap Button */}
+            <div className="text-center my-2 d-flex align-items-center">
+              <hr className="flex-grow-1 me-3" />
+              <div
+                className="btn btn-light bg-green-light rounded-circle d-flex align-items-center justify-content-center"
+                style={{
+                  width: "40px",
+                  height: "40px",
+                }}
+              >
+                ⇅
+              </div>
+              <hr className="flex-grow-1 ms-3" />
+            </div>
+
+            {/* Converted Result */}
+            <div className="mb-4">
+              <label htmlFor="converted" className="form-label small">
+                Converted to
+              </label>
+              <div className="input-group">
+                <input
+                  type="text"
+                  className="form-control form-control-lg"
+                  id="converted"
+                  value={result || 0}
+                  readOnly
+                />
+                <select
+                  className="form-select form-select-lg"
+                  id="toCurrency"
+                  value={toCurrency}
+                  onChange={(e) => setToCurrency(e.target.value)}
+                  style={{ maxWidth: "120px" }}
+                >
+                  {memoizedCurrencies.map((currency) => (
+                    <option key={currency.code} value={currency.code}>
+                      {currency.code}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Convert Button */}
+            <div className="d-grid gap-2 mt-4">
+              <button
+                className="btn bg-green-light btn-lg"
+                onClick={handleConvert}
+                disabled={loading}
+              >
+                Convert money
+              </button>
+            </div>
+          </div>
         </div>
-      )}
+
+        {/* Right Column - Conversion History */}
+        <div className="col d-flex">
+          <div className="glass-effect py-4 rounded-4 w-100">
+            <h6 className="mb-3 text-secondary fw-medium text-start px-5">
+              Conversion History
+            </h6>
+
+            {memoizedConversionHistory.length === 0 ? (
+              <p className="text-center text-secondary">No conversions yet.</p>
+            ) : (
+              <div className="conversion-table">
+                <div className="table-responsive">
+                  <table className="table table-hover align-middle">
+                    <thead>
+                      <tr className="text-secondary">
+                        <th className="fw-medium">Time</th>
+                        <th className="fw-medium text-center">Conversion</th>
+                        <th className="fw-medium text-end">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {memoizedConversionHistory.map((record, index) => (
+                        <tr key={index} className="border-bottom">
+                          <td className="text-nowrap">
+                            <div>{record?.date}</div>
+                            <small className="text-secondary">
+                              {record?.time}
+                            </small>
+                          </td>
+                          <td className="text-center">
+                            <span className="text-primary-green">
+                              {record?.from}
+                            </span>
+                            <span className="mx-2">→</span>
+                            <span className="text-primary-green">
+                              {record?.to}
+                            </span>
+                          </td>
+                          <td className="text-end">
+                            <div className="fw-medium">
+                              {record?.amount.toLocaleString()} {record?.from}
+                            </div>
+                            <div className="text-success">
+                              {record?.result.toLocaleString()} {record?.to}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
